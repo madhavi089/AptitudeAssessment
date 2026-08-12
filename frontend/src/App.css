@@ -1,0 +1,180 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #222;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1e3a8a;
+}
+
+.start-screen {
+  background: white;
+  padding: 50px;
+  border-radius: 15px;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.start-screen p {
+  font-size: 18px;
+  margin: 15px;
+}
+
+.timer {
+  text-align: center;
+  color: #dc2626;
+  margin-bottom: 25px;
+}
+
+.question-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.question-card h3 {
+  margin-top: 0;
+  color: #1e3a8a;
+}
+
+.option {
+  display: block;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #fafafa;
+}
+
+.option:hover {
+  background: #eeeeee;
+}
+
+.option input {
+  margin-right: 10px;
+}
+
+.submit-button {
+  display: block;
+  margin: 25px auto;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 7px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background: #1d4ed8;
+}
+
+.result {
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+h2 {
+  color: #1f2937;
+}
+
+.start-screen h1 {
+  color: #1e3a8a;
+}
+
+.start-screen p {
+  color: #333333;
+}
+.score {
+  font-size: 50px;
+  font-weight: bold;
+  color: #2563eb;
+  margin: 20px 0;
+}
+
+.correct {
+  font-size: 20px;
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.wrong {
+  font-size: 20px;
+  color: #dc2626;
+  font-weight: bold;
+}
+.admin-button {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 7px;
+  background: #7c3aed;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.admin-button:hover {
+  background: #6d28d9;
+}
+
+.add-question {
+  max-width: 600px;
+  margin: 30px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.add-question h1 {
+  text-align: center;
+  color: #1e3a8a;
+}
+
+.add-question form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.add-question input,
+.add-question select {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.add-question button {
+  padding: 12px;
+  border: none;
+  border-radius: 7px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.add-question button:hover {
+  background: #1d4ed8;
+}

@@ -20,11 +20,15 @@ class Assessment(Base):
     __tablename__ = "assessments"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)
-    started_at = Column(TIMESTAMP)
-    submitted_at = Column(TIMESTAMP)
-    status = Column(String(20))
+    category = Column(String)
+    difficulty = Column(String)
+    total_questions = Column(Integer)
+    answered_questions = Column(Integer)
+    correct_answers = Column(Integer)
+    wrong_answers = Column(Integer)
+    unanswered_questions = Column(Integer)
     score = Column(Integer)
+    percentage = Column(Integer)
 
 
 class UserAnswer(Base):
