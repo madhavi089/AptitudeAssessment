@@ -1,47 +1,40 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
-import AddQuestion from "./AddQuestion";
-import QuestionManagement from "./QuestionManagement";
+
+const API_URL = "http://127.0.0.1:8000";
 
 function App() {
   const [questions, setQuestions] = useState([]);
+  const [assessmentQuestions, setAssessmentQuestions] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [score, setScore] = useState(null);
-
   const [timeLeft, setTimeLeft] = useState(600);
   const [started, setStarted] = useState(false);
-
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedDifficulty, setSelectedDifficulty] = useState("All");
-
-  const [showAddQuestion, setShowAddQuestion] = useState(false);
-  const [showQuestionManagement, setShowQuestionManagement] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://127.0.0.1:8000/questions")
-      .then((response) => {
-        setQuestions(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching questions:", error);
-      });
+    loadQuestions();
   }, []);
 
-  const filteredQuestions = questions.filter((question) => {
-    const categoryMatch =
-      selectedCategory === "All" ||
-      question.category.trim().toLowerCase() ===
-        selectedCategory.trim().toLowerCase();
+  const loadQuestions = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-    const difficultyMatch =
-      selectedDifficulty === "All" ||
-      question.difficulty.trim().toLowerCase() ===
-        selectedDifficulty.trim().toLowerCase();
+      const response = await axios.get(
+        `${API_URL}/questions`
+      );
 
-    return categoryMatch && difficultyMatch;
-  });
+      setQuestions(response.data);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to connect to the backend.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!started || score !== null) {
@@ -54,13 +47,90 @@ function App() {
     }
 
     const timer = setInterval(() => {
-      setTimeLeft((time) => time - 1);
+      setTimeLeft((previous) => previous - 1);
     }, 1000);
 
     return () => clearInterval(timer);
   }, [started, timeLeft, score]);
 
-  const handleAnswerChange = (questionId, answer) => {
+  const shuffleQuestions = (questionList) => {
+    return [...questionList].sort(
+      () => Math.random() - 0.5
+    );
+  };
+
+  const startAssessment = () => {
+    const quantitativeQuestions = questions.filter(
+      (question) =>
+        question.category?.trim().toLowerCase() ===
+        "quantitative"
+    );
+
+    const logicalQuestions = questions.filter(
+      (question) =>
+        question.category?.trim().toLowerCase() ===
+        "logical reasoning"
+    );
+
+    const verbalQuestions = questions.filter(
+      (question) =>
+        question.category?.trim().toLowerCase() ===
+        "verbal ability"
+    );
+
+    if (quantitativeQuestions.length < 5) {
+      alert(
+        "At least 5 Quantitative questions are required."
+      );
+      return;
+    }
+
+    if (logicalQuestions.length < 5) {
+      alert(
+        "At least 5 Logical Reasoning questions are required."
+      );
+      return;
+    }
+
+    if (verbalQuestions.length < 5) {
+      alert(
+        "At least 5 Verbal Ability questions are required."
+      );
+      return;
+    }
+
+    const selectedQuantitative =
+      shuffleQuestions(
+        quantitativeQuestions
+      ).slice(0, 5);
+
+    const selectedLogical =
+      shuffleQuestions(
+        logicalQuestions
+      ).slice(0, 5);
+
+    const selectedVerbal =
+      shuffleQuestions(
+        verbalQuestions
+      ).slice(0, 5);
+
+    const finalQuestions = shuffleQuestions([
+      ...selectedQuantitative,
+      ...selectedLogical,
+      ...selectedVerbal,
+    ]);
+
+    setAssessmentQuestions(finalQuestions);
+    setSelectedAnswers({});
+    setScore(null);
+    setTimeLeft(600);
+    setStarted(true);
+  };
+
+  const handleAnswerChange = (
+    questionId,
+    answer
+  ) => {
     setSelectedAnswers((previous) => ({
       ...previous,
       [questionId]: answer,
@@ -70,9 +140,10 @@ function App() {
   const handleSubmit = () => {
     let totalScore = 0;
 
-    filteredQuestions.forEach((question) => {
+    assessmentQuestions.forEach((question) => {
       if (
-        selectedAnswers[question.id] === question.correct_answer
+        selectedAnswers[question.id] ===
+        question.correct_answer
       ) {
         totalScore++;
       }
@@ -81,51 +152,73 @@ function App() {
     setScore(totalScore);
   };
 
-  const startAssessment = () => {
-    if (filteredQuestions.length === 0) {
-      alert("No questions available for the selected category and difficulty.");
-      return;
+  const getReviewOptionClass = (
+    question,
+    optionLetter
+  ) => {
+    const selectedAnswer =
+      selectedAnswers[question.id];
+
+    const correctAnswer =
+      question.correct_answer;
+
+    if (optionLetter === correctAnswer) {
+      return "review-option correct-option";
     }
 
-    setSelectedAnswers({});
-    setScore(null);
-    setTimeLeft(600);
-    setStarted(true);
+    if (
+      optionLetter === selectedAnswer &&
+      selectedAnswer !== correctAnswer
+    ) {
+      return "review-option wrong-option";
+    }
+
+    return "review-option";
   };
 
-  const retakeAssessment = () => {
-    setSelectedAnswers({});
-    setScore(null);
-    setTimeLeft(600);
-    setStarted(false);
+  const formatTime = () => {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+
+    return `${minutes}:${String(seconds).padStart(
+      2,
+      "0"
+    )}`;
   };
 
-  if (showAddQuestion) {
+  if (loading) {
     return (
       <div className="container">
-        <button
-          className="admin-button"
-          onClick={() => setShowAddQuestion(false)}
-        >
-          Back to Assessment
-        </button>
+        <div className="start-screen">
+          <h1 className="title">
+            Aptitude Assessment
+          </h1>
 
-        <AddQuestion />
+          <p>Loading questions...</p>
+        </div>
       </div>
     );
   }
 
-  if (showQuestionManagement) {
+  if (error) {
     return (
       <div className="container">
-        <button
-          className="admin-button"
-          onClick={() => setShowQuestionManagement(false)}
-        >
-          Back to Assessment
-        </button>
+        <div className="start-screen">
+          <h1 className="title">
+            Aptitude Assessment
+          </h1>
 
-        <QuestionManagement />
+          <p className="error">
+            {error}
+          </p>
+
+          <button
+            className="submit-button"
+            onClick={loadQuestions}
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -133,23 +226,7 @@ function App() {
   if (!started) {
     return (
       <div className="container">
-
-        <button
-          className="admin-button"
-          onClick={() => setShowAddQuestion(true)}
-        >
-          Add Question
-        </button>
-
-        <button
-          className="admin-button"
-          onClick={() => setShowQuestionManagement(true)}
-        >
-          Manage Questions
-        </button>
-
         <div className="start-screen">
-
           <h1 className="title">
             Aptitude Assessment
           </h1>
@@ -158,63 +235,36 @@ function App() {
             Test your aptitude skills
           </p>
 
-          <h2>Choose Category</h2>
-
-          <select
-            value={selectedCategory}
-            onChange={(e) =>
-              setSelectedCategory(e.target.value)
-            }
-          >
-            <option value="All">All Categories</option>
-            <option value="Quantitative">
-              Quantitative
-            </option>
-            <option value="Logical Reasoning">
-              Logical Reasoning
-            </option>
-            <option value="Verbal Ability">
-              Verbal Ability
-            </option>
-          </select>
-
-          <h2>Choose Difficulty</h2>
-
-          <select
-            value={selectedDifficulty}
-            onChange={(e) =>
-              setSelectedDifficulty(e.target.value)
-            }
-          >
-            <option value="All">All Levels</option>
-            <option value="Easy">Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
+          <h2>
+            Assessment Pattern
+          </h2>
 
           <p>
-            Number of Questions:{" "}
-            {filteredQuestions.length}
+            Quantitative: 5 Questions
           </p>
+
+          <p>
+            Logical Reasoning: 5 Questions
+          </p>
+
+          <p>
+            Verbal Ability: 5 Questions
+          </p>
+
+          <h3>
+            Total Questions: 15
+          </h3>
 
           <p>
             Time Limit: 10 Minutes
           </p>
 
-          {filteredQuestions.length === 0 ? (
-            <p>
-              No questions available for the selected
-              category and difficulty.
-            </p>
-          ) : (
-            <button
-              className="submit-button"
-              onClick={startAssessment}
-            >
-              Start Assessment
-            </button>
-          )}
-
+          <button
+            className="submit-button"
+            onClick={startAssessment}
+          >
+            Start Test
+          </button>
         </div>
       </div>
     );
@@ -225,15 +275,29 @@ function App() {
       Object.keys(selectedAnswers).length;
 
     const wrongAnswers =
-      answeredQuestions - score;
+      assessmentQuestions.filter(
+        (question) => {
+          const selectedAnswer =
+            selectedAnswers[question.id];
+
+          return (
+            selectedAnswer &&
+            selectedAnswer !==
+              question.correct_answer
+          );
+        }
+      ).length;
 
     const unansweredQuestions =
-      filteredQuestions.length - answeredQuestions;
+      assessmentQuestions.length -
+      answeredQuestions;
 
     const percentage =
-      filteredQuestions.length > 0
+      assessmentQuestions.length > 0
         ? Math.round(
-            (score / filteredQuestions.length) * 100
+            (score /
+              assessmentQuestions.length) *
+              100
           )
         : 0;
 
@@ -241,41 +305,96 @@ function App() {
       <div className="container">
 
         <div className="result">
-
           <h1>
-            🎉 Assessment Completed!
+            Assessment Completed
           </h1>
 
-          <h2>Your Score</h2>
+          <h2>
+            Your Score
+          </h2>
 
           <div className="score">
-            {score} / {filteredQuestions.length}
+            {score} / {assessmentQuestions.length}
           </div>
 
-          <p className="correct">
+          <p className="correct-result">
             Correct Answers: {score}
           </p>
 
-          <p className="wrong">
+          <p className="wrong-result">
             Wrong Answers: {wrongAnswers}
           </p>
 
-          <p>
-            Unanswered Questions: {unansweredQuestions}
+          <p className="unanswered-result">
+            Unanswered Questions:{" "}
+            {unansweredQuestions}
           </p>
 
           <p>
             Percentage: {percentage}%
           </p>
-
-          <button
-            className="submit-button"
-            onClick={retakeAssessment}
-          >
-            Retake Assessment
-          </button>
-
         </div>
+
+        <h1 className="title review-title">
+          Review Answers
+        </h1>
+
+        {assessmentQuestions.map(
+          (question, index) => (
+            <div
+              className="question-card"
+              key={question.id}
+            >
+
+              <h3>
+                Question {index + 1}:{" "}
+                {question.question_text}
+              </h3>
+
+              <div
+                className={getReviewOptionClass(
+                  question,
+                  "A"
+                )}
+              >
+                <strong>A.</strong>{" "}
+                {question.option_a}
+              </div>
+
+              <div
+                className={getReviewOptionClass(
+                  question,
+                  "B"
+                )}
+              >
+                <strong>B.</strong>{" "}
+                {question.option_b}
+              </div>
+
+              <div
+                className={getReviewOptionClass(
+                  question,
+                  "C"
+                )}
+              >
+                <strong>C.</strong>{" "}
+                {question.option_c}
+              </div>
+
+              <div
+                className={getReviewOptionClass(
+                  question,
+                  "D"
+                )}
+              >
+                <strong>D.</strong>{" "}
+                {question.option_d}
+              </div>
+
+            </div>
+          )
+        )}
+
       </div>
     );
   }
@@ -288,94 +407,114 @@ function App() {
       </h1>
 
       <h2 className="timer">
-        Time Left:{" "}
-        {Math.floor(timeLeft / 60)}:
-        {String(timeLeft % 60).padStart(2, "0")}
+        Time Left: {formatTime()}
       </h2>
 
-      <h2>
-        {selectedCategory} - {selectedDifficulty}
+      <h2 className="title">
+        Answer the following 15 questions
       </h2>
 
-      <h2>
-        Answer the following questions
-      </h2>
+      {assessmentQuestions.map(
+        (question, index) => (
+          <div
+            className="question-card"
+            key={question.id}
+          >
 
-      {filteredQuestions.map((question, index) => (
-        <div
-          className="question-card"
-          key={question.id}
-        >
+            <h3>
+              Question {index + 1}:{" "}
+              {question.question_text}
+            </h3>
 
-          <h3>
-            Question {index + 1}:{" "}
-            {question.question_text}
-          </h3>
+            <label className="option">
+              <input
+                type="radio"
+                name={`question-${question.id}`}
+                checked={
+                  selectedAnswers[
+                    question.id
+                  ] === "A"
+                }
+                onChange={() =>
+                  handleAnswerChange(
+                    question.id,
+                    "A"
+                  )
+                }
+              />
 
-          <label className="option">
-            <input
-              type="radio"
-              name={`question-${question.id}`}
-              onChange={() =>
-                handleAnswerChange(
-                  question.id,
-                  "A"
-                )
-              }
-            />
-            A. {question.option_a}
-          </label>
+              A. {question.option_a}
+            </label>
 
-          <label className="option">
-            <input
-              type="radio"
-              name={`question-${question.id}`}
-              onChange={() =>
-                handleAnswerChange(
-                  question.id,
-                  "B"
-                )
-              }
-            />
-            B. {question.option_b}
-          </label>
+            <label className="option">
+              <input
+                type="radio"
+                name={`question-${question.id}`}
+                checked={
+                  selectedAnswers[
+                    question.id
+                  ] === "B"
+                }
+                onChange={() =>
+                  handleAnswerChange(
+                    question.id,
+                    "B"
+                  )
+                }
+              />
 
-          <label className="option">
-            <input
-              type="radio"
-              name={`question-${question.id}`}
-              onChange={() =>
-                handleAnswerChange(
-                  question.id,
-                  "C"
-                )
-              }
-            />
-            C. {question.option_c}
-          </label>
+              B. {question.option_b}
+            </label>
 
-          <label className="option">
-            <input
-              type="radio"
-              name={`question-${question.id}`}
-              onChange={() =>
-                handleAnswerChange(
-                  question.id,
-                  "D"
-                )
-              }
-            />
-            D. {question.option_d}
-          </label>
+            <label className="option">
+              <input
+                type="radio"
+                name={`question-${question.id}`}
+                checked={
+                  selectedAnswers[
+                    question.id
+                  ] === "C"
+                }
+                onChange={() =>
+                  handleAnswerChange(
+                    question.id,
+                    "C"
+                  )
+                }
+              />
 
-        </div>
-      ))}
+              C. {question.option_c}
+            </label>
+
+            <label className="option">
+              <input
+                type="radio"
+                name={`question-${question.id}`}
+                checked={
+                  selectedAnswers[
+                    question.id
+                  ] === "D"
+                }
+                onChange={() =>
+                  handleAnswerChange(
+                    question.id,
+                    "D"
+                  )
+                }
+              />
+
+              D. {question.option_d}
+            </label>
+
+          </div>
+        )
+      )}
 
       <button
         className="submit-button"
         onClick={handleSubmit}
       >
-        Submit Assessment
+        Submit Test
       </button>
 
     </div>

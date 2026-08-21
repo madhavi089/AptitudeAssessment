@@ -19,6 +19,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -52,6 +54,24 @@ def get_questions(
     db: Session = Depends(get_db)
 ):
     return crud.get_questions(db)
+
+
+@app.get(
+    "/questions/random-assessment",
+    response_model=list[schemas.QuestionResponse]
+)
+def get_random_assessment(
+    db: Session = Depends(get_db)
+):
+    questions = crud.get_random_assessment_questions(db)
+
+    if len(questions) != 15:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not generate 15 questions"
+        )
+
+    return questions
 
 
 @app.get(

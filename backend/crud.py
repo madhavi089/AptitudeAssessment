@@ -1,9 +1,13 @@
 from sqlalchemy.orm import Session
 import models
 import schemas
+import random
 
 
-def create_question(db: Session, question: schemas.QuestionCreate):
+def create_question(
+    db: Session,
+    question: schemas.QuestionCreate
+):
     db_question = models.Question(
         question_text=question.question_text,
         category=question.category,
@@ -26,7 +30,10 @@ def get_questions(db: Session):
     return db.query(models.Question).all()
 
 
-def get_question(db: Session, question_id: int):
+def get_question(
+    db: Session,
+    question_id: int
+):
     return db.query(models.Question).filter(
         models.Question.id == question_id
     ).first()
@@ -59,7 +66,10 @@ def update_question(
     return db_question
 
 
-def delete_question(db: Session, question_id: int):
+def delete_question(
+    db: Session,
+    question_id: int
+):
     db_question = db.query(models.Question).filter(
         models.Question.id == question_id
     ).first()
@@ -71,6 +81,45 @@ def delete_question(db: Session, question_id: int):
     db.commit()
 
     return db_question
+
+
+def get_random_assessment_questions(db: Session):
+    quantitative = db.query(models.Question).filter(
+        models.Question.category == "Quantitative"
+    ).all()
+
+    logical = db.query(models.Question).filter(
+        models.Question.category == "Logical Reasoning"
+    ).all()
+
+    verbal = db.query(models.Question).filter(
+        models.Question.category == "Verbal Ability"
+    ).all()
+
+    if len(quantitative) < 5:
+        raise ValueError(
+            "At least 5 Quantitative questions are required"
+        )
+
+    if len(logical) < 5:
+        raise ValueError(
+            "At least 5 Logical Reasoning questions are required"
+        )
+
+    if len(verbal) < 5:
+        raise ValueError(
+            "At least 5 Verbal Ability questions are required"
+        )
+
+    selected_questions = (
+        random.sample(quantitative, 5)
+        + random.sample(logical, 5)
+        + random.sample(verbal, 5)
+    )
+
+    random.shuffle(selected_questions)
+
+    return selected_questions
 
 
 def create_assessment(

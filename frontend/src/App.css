@@ -29,6 +29,11 @@ body {
 .start-screen p {
   font-size: 18px;
   margin: 15px;
+  color: #333;
+}
+
+.start-screen h1 {
+  color: #1e3a8a;
 }
 
 .timer {
@@ -41,7 +46,7 @@ body {
   background: white;
   border: 1px solid #ddd;
   border-radius: 10px;
-  padding: 20px;
+  padding: 25px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -49,6 +54,7 @@ body {
 .question-card h3 {
   margin-top: 0;
   color: #1e3a8a;
+  line-height: 1.5;
 }
 
 .option {
@@ -92,17 +98,11 @@ body {
   text-align: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-h2 {
-  color: #1f2937;
-}
 
-.start-screen h1 {
+.result h1 {
   color: #1e3a8a;
 }
 
-.start-screen p {
-  color: #333333;
-}
 .score {
   font-size: 50px;
   font-weight: bold;
@@ -110,71 +110,48 @@ h2 {
   margin: 20px 0;
 }
 
-.correct {
-  font-size: 20px;
+.correct-result {
   color: #16a34a;
+  font-size: 18px;
   font-weight: bold;
 }
 
-.wrong {
-  font-size: 20px;
+.wrong-result {
+  color: #dc2626;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.unanswered-result {
+  color: #6b7280;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.review-title {
+  margin-top: 40px;
+}
+
+.review-option {
+  padding: 15px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  background: #fafafa;
+  font-size: 16px;
+}
+
+.correct-option {
+  border: 2px solid #16a34a;
+  background: #f0fdf4;
+}
+
+.wrong-option {
+  border: 2px solid #dc2626;
+  background: #fef2f2;
+}
+
+.error {
   color: #dc2626;
   font-weight: bold;
-}
-.admin-button {
-  display: block;
-  margin: 20px auto;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 7px;
-  background: #7c3aed;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.admin-button:hover {
-  background: #6d28d9;
-}
-
-.add-question {
-  max-width: 600px;
-  margin: 30px auto;
-  padding: 30px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.add-question h1 {
-  text-align: center;
-  color: #1e3a8a;
-}
-
-.add-question form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.add-question input,
-.add-question select {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 15px;
-}
-
-.add-question button {
-  padding: 12px;
-  border: none;
-  border-radius: 7px;
-  background: #2563eb;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.add-question button:hover {
-  background: #1d4ed8;
 }
